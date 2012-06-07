@@ -55,7 +55,7 @@ fi
 # download the installation disk if you haven't already or it is corrupted somehow
 if [ ! -e "${ISO_FILENAME}" ]; then
   echo "Downloading `basename ${ISO_URL}` ..."
-  transmission-cli --download-dir "${ISO_FILENAME}" "${ISO_URL}"
+  transmission-cli --download-dir "${FOLDER_ISO}" "${ISO_URL}"
 
   # make sure download is right...
   ISO_HASH=`md5sum "${ISO_FILENAME}" | cut -d" " -f 1`
