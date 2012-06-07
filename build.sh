@@ -1,7 +1,13 @@
 #!/bin/bash
+if [[ $EUID -ne 0 ]]; then
+  echo "You must be a root user" 2>&1
+  exit 1
+fi
 
 # make sure we have dependencies 
 hash mkisofs 2>/dev/null || { echo >&2 "ERROR: mkisofs not found.  Aborting."; exit 1; }
+hash transmission-cli 2>/dev/null || { echo >&2 "ERROR: transmission-cli not found. Install it by typing 'sudo apt-get install transmission-cli'. Aborting."; exit 1; }
+hash file-roller 2>/dev/null || { echo >&2 "ERROR: file-roller not found. Install it by typing 'sudo apt-get install file-roller'. Aborting."; exit 1; }
 
 set -o nounset
 set -o errexit
@@ -9,7 +15,8 @@ set -o errexit
 
 # Configurations
 BOX="ubuntu-precise-64"
-ISO_URL="http://releases.ubuntu.com/precise/ubuntu-12.04-alternate-amd64.iso"
+BASE_NAME="ubuntu-12.04-alternate-amd64.iso"
+ISO_URL="http://releases.ubuntu.com/precise/$BASE_NAME.torrent"
 ISO_MD5="9fcc322536575dda5879c279f0b142d7"
 
 # location, location, location
@@ -35,17 +42,24 @@ mkdir -p "${FOLDER_VBOX}"
 mkdir -p "${FOLDER_ISO_CUSTOM}"
 mkdir -p "${FOLDER_ISO_INITRD}"
 
-ISO_FILENAME="${FOLDER_ISO}/`basename ${ISO_URL}`"
+ISO_FILENAME="${FOLDER_ISO}/${BASE_NAME}"
 INITRD_FILENAME="${FOLDER_ISO}/initrd.gz"
-ISO_GUESTADDITIONS="/Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso"
+ISO_GUESTADDITIONS="/usr/share/virtualbox/VBoxGuestAdditions.iso"
+
+# check if guest additions is in it's regular place (apparently not in 12.04 - I had to install it)
+if [ ! -f $ISO_GUESTADDITIONS ]; then
+  echo "ERROR: VirtualBoxGuestAdditions.iso file can't be found. 'sudo apt-get install virtualbox-guest-additions-iso'. Aborting.";
+  exit 1
+fi
 
 # download the installation disk if you haven't already or it is corrupted somehow
-echo "Downloading `basename ${ISO_URL}` ..."
 if [ ! -e "${ISO_FILENAME}" ]; then
-  curl --output "${ISO_FILENAME}" -L "${ISO_URL}"
+  echo "Downloading `basename ${ISO_URL}` ..."
+  transmission-cli --download-dir "${ISO_FILENAME}" "${ISO_URL}"
 
   # make sure download is right...
-  ISO_HASH=`md5 -q "${ISO_FILENAME}"`
+  ISO_HASH=`md5sum "${ISO_FILENAME}" | cut -d" " -f 1`
+  echo $ISO_HASH
   if [ "${ISO_MD5}" != "${ISO_HASH}" ]; then
     echo "ERROR: MD5 does not match. Got ${ISO_HASH} instead of ${ISO_MD5}. Aborting."
     exit 1
@@ -57,7 +71,8 @@ echo "Creating Custom ISO"
 if [ ! -e "${FOLDER_ISO}/custom.iso" ]; then
 
   echo "Untarring downloaded ISO ..."
-  tar -C "${FOLDER_ISO_CUSTOM}" -xf "${ISO_FILENAME}"
+  #tar -C "${FOLDER_ISO_CUSTOM}" -xf "${ISO_FILENAME}"
+  file-roller -e "${FOLDER_ISO_CUSTOM}" "${ISO_FILENAME}"
 
   # backup initrd.gz
   echo "Backing up current init.rd ..."
