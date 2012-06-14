@@ -1,19 +1,27 @@
 ## About
 
-This script will: 
+This script has been ported to Ubuntu 12.04. It will: 
 
- 1. download the Ubuntu 12.04 alternate server, 64bit iso
+ 1. download the Ubuntu 12.04 alternate server (torrent), 64bit iso
  2. ... do some magic to turn it into a vagrant box file
  3. output package.box 
 
 ## Usage
 
-    ./build.sh
+    $ sudo ./build.sh
 
-This should do everything you need. If you don't have 
-mkisofs, install [homebrew](http://mxcl.github.com/homebrew/), then:
+This should do everything you need. If you don't have you must 
+have `transmission-cli` installed `sudo apt-get install transmission-cli`
+if not. Likewise, `file-roller` (which should be installed by default with
+Ubuntu-Desktop, otherwise `sudo apt-get install file-roller` then:
 
-    brew install cdrtools
+### Kev's notes
+
+"Let's do it all on my **Ubuntu PC**, I said."
+
+Standing on the shoulder's of giants (thanks Carl & Ben) - I have 
+modified this `bash` script to work on Ubuntu 12.04 (Precise Pangolin). 
+I also modified to download via torrent instead of slow HTTP.
 
 Possible extra steps for OSX Lion:
 
