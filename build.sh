@@ -9,7 +9,8 @@ set -o errexit
 
 # Configurations
 BOX="ubuntu-precise-64"
-ISO_URL="http://releases.ubuntu.com/precise/ubuntu-12.04-alternate-amd64.iso"
+# ISO_URL="http://releases.ubuntu.com/precise/ubuntu-12.04-alternate-amd64.iso"
+ISO_URL="http://mirrors.163.com/ubuntu-releases/12.04/ubuntu-12.04-alternate-amd64.iso"
 ISO_MD5="9fcc322536575dda5879c279f0b142d7"
 
 # location, location, location
@@ -48,6 +49,14 @@ if [ ! -e "${ISO_FILENAME}" ]; then
   ISO_HASH=`md5 -q "${ISO_FILENAME}"`
   if [ "${ISO_MD5}" != "${ISO_HASH}" ]; then
     echo "ERROR: MD5 does not match. Got ${ISO_HASH} instead of ${ISO_MD5}. Aborting."
+    exit 1
+  fi
+else
+  # make sure download is right...
+  ISO_HASH=`md5 -q "${ISO_FILENAME}"`
+  if [ "${ISO_MD5}" != "${ISO_HASH}" ]; then
+    echo "ERROR: MD5 does not match. Got ${ISO_HASH} instead of ${ISO_MD5}. Aborting or continuing to download...."
+    curl -C - --output "${ISO_FILENAME}" -L "${ISO_URL}"
     exit 1
   fi
 fi
