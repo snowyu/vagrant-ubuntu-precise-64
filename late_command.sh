@@ -22,4 +22,5 @@ mv /tmp/grub /etc/default/grub
 update-grub
 
 # clean up
+apt-get -f dist-upgrade
 apt-get clean
